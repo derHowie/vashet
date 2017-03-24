@@ -1,7 +1,8 @@
 (ns vashet.core
   (:require        js.fela js.fela-dom js.fela-prefixer
+                   [clojure.string :refer [capitalize split]]
                    [reagent.core :as r])
-  (:require-macros [vashet.clj.core :refer [js-keyframe js-result]]))
+  (:require-macros [vashet.core :refer [js-keyframe js-result]]))
 
 (enable-console-print!)
 ;; ---------------------- Helpers
@@ -9,6 +10,18 @@
 (defn- map->name-seq
   [m]
   (interleave (map name (map key m)) (map val m)))
+
+(defn- kebab->camel
+  [v]
+  (reduce (fn [a b] (if a (str a (capitalize b)) b)) nil (split (name v) #"\-")))
+
+(defn- map-map
+  ([m f1] (map-map m f1 identity)) 
+  ([m f1 f2] (zipmap (map f1 (map key m)) (map f2 (map val m)))))
+
+(defn- map-keys->camel
+  [m]
+  (map-map m kebab->camel))
 
 ;; ---------------------- Renderer API
 
@@ -20,8 +33,8 @@
    @param {map} config: a map of configuration options; includes plugins, key-frame-prefixes, enhancers, media-query-order, selector-prefix"
   [& [config]]
   (if-let [c config]
-  (reset! Renderer (.createRenderer js/Fela (apply js-obj (map->name-seq c))))
-  (reset! Renderer (.create))))
+  (reset! Renderer (.createRenderer js/Fela (apply js-obj (map->name-seq (map-keys->camel c)))))
+  (reset! Renderer (.createRenderer js/Fela))))
 
 (defn render-rule
   "accepts a function, applies the resulting styles to the style node,
@@ -134,6 +147,8 @@
 (defn test-rule
   [props]
   {:color     (:color props)
+   :transform "rotate(90deg)"
+   :display   "inline-block"
    :font-size (str (* (:font-size props) 10) "px")
    :animation (build-animation
                 :duration  "1s"
@@ -167,5 +182,5 @@
                                  :on-click #(swap! state not)}
                                 "Test Component"]])})))
 
-(create-renderer)
+(create-renderer {:plugins #js[(js/FelaPluginPrefixer)]})
 (r/render [test-cmp] (.getElementById js/document "app"))

@@ -1,4 +1,4 @@
-(ns vashet.clj.core)
+(ns vashet.core)
 
 (defmacro js-result
   "Accepts a function that returns a map and returns a
@@ -13,7 +13,5 @@
    comprised of values that are javascript objects"
   [wrapped-fn]
   `(fn [& [props#]]
-     (let [value->js-obj# #(apply ~'js-obj (~'map->name-seq %))
-           mapped-keys#   (map key (~wrapped-fn props#))
-           mapped-values# (map value->js-obj# (map val (~wrapped-fn props#)))]
-       (apply hash-map (interleave mapped-keys# mapped-values#)))))
+     (let [value->js-obj# #(apply ~'js-obj (~'map->name-seq %))]
+       (~'map-map (~wrapped-fn props#) identity value->js-obj#))))
