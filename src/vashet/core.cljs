@@ -1,10 +1,62 @@
 (ns vashet.core
-  (:require        js.fela js.fela-dom js.fela-prefixer
-                   [clojure.string :refer [capitalize split]]
-                   [reagent.core :as r])
-  (:require-macros [vashet.core :refer [js-keyframe js-result]]))
+  (:require
+    js.fela
+    js.fela-dom
+    js.fela-font-renderer
+    js.fela-prefixer
+    [clojure.spec :as s]
+    [clojure.string :refer [capitalize split]]
+    [reagent.core :as r])
+  (:require-macros
+    [vashet.core :refer [js-keyframe js-result]]))
 
-(enable-console-print!)
+;; ---------------------- Spec
+
+(def key-or-str (s/or :keyword keyword? :string string?))
+(def num-or-str (s/or :number number? :string string?))
+(def coll-or-str (s/or :coll coll? :string string?))
+(def valid-style-map (s/nilable (s/map-of key-or-str (s/nilable num-or-str))))
+
+(s/def ::renderer-config (s/nilable (s/map-of key-or-str coll-or-str :max-count 5)))
+
+(s/def ::render-rule fn?)
+(s/def ::rule-result valid-style-map)
+
+(s/def ::render-keyframe fn?)
+(s/def ::keyframe-result (s/nilable (s/map-of key-or-str map?)))
+
+(s/def ::font-family string?)
+(s/def ::font-files coll?)
+(s/def ::font-props map?)
+
+(s/def ::static-styles valid-style-map)
+(s/def ::static-selectors (s/or :string string? :selector-vec (s/coll-of key-or-str)))
+
+(s/def ::subscription-callback fn?)
+
+(s/def ::rule-collection (s/coll-of fn?))
+
+(s/def ::duration string?)
+(s/def ::timing-fn (s/nilable string?))
+(s/def ::delay (s/nilable string?))
+(s/def ::count (s/nilable (s/or :string string? :number number?)))
+(s/def ::direction (s/nilable string?))
+(s/def ::keyframe fn?)
+(s/def ::animation
+  (s/keys :req-un [::duration ::keyframe]
+          :opt-un [::timing-fn ::delay ::count ::direction ::keyframe]))
+
+
+(defn- args-valid?
+  [spec args fn-name]
+  (let [valid? (s/valid? spec args)]
+    (when-not valid?
+      (throw
+        (js/Error.
+          (str "METHOD: " fn-name ": \n"
+               (s/explain-str spec args)))))
+    valid?))
+
 ;; ---------------------- Helpers
 
 (defn- map->name-seq
@@ -23,6 +75,28 @@
   [m]
   (map-map m kebab->camel))
 
+(defn- vec->array
+  [v]
+  (if (and (coll? v) (not (map? v))) (apply array v) v))
+
+(defn- rip-nils
+  [m]
+  (into {} (filter #(not= (val %) nil) m)))
+
+;; ---------------------- Plugins / Enhancers
+
+(defn auto-prefixer
+  "applies auto vendor prefixing to styles when this method invocation is included in the 'plugins' vector of the 'create-renderer' config"
+  []
+  (js/FelaPluginPrefixer))
+
+(defn create-font-renderer
+  "creates a seperate renderer for adding font faces to a style node to avoid reloading fonts on each diff; include in the 'enhancers' vector of the 'create-renderer' config
+
+   @param {dom-element} node: the 'style' or 'div' node to append font faces to REQUIRED"
+  [node]
+  (js/FelaFontRenderer node))
+
 ;; ---------------------- Renderer API
 
 (def Renderer (atom nil))
@@ -32,9 +106,13 @@
    
    @param {map} config: a map of configuration options; includes plugins, key-frame-prefixes, enhancers, media-query-order, selector-prefix"
   [& [config]]
-  (if-let [c config]
-  (reset! Renderer (.createRenderer js/Fela (apply js-obj (map->name-seq (map-keys->camel c)))))
-  (reset! Renderer (.createRenderer js/Fela))))
+  {:pre [(args-valid? ::renderer-config config "create-renderer")]}
+  (let [default-config {:plugins [(auto-prefixer)]}
+        jsify-config   #(apply js-obj (map vec->array (map->name-seq (map-keys->camel %))))
+        js-config      (if config
+                         (jsify-config (merge default-config config))
+                         (jsify-config default-config))]
+    (reset! Renderer (.createRenderer js/Fela js-config))))
 
 (defn render-rule
   "accepts a function, applies the resulting styles to the style node,
@@ -43,6 +121,8 @@
    @param {fn}  rule:  a function returning a map of styles REQUIRED
    @param {map} props: a map of styles passed to the rule function"
   [rule props]
+  {:pre [(args-valid? ::render-rule rule "render-rule")]}
+  {:post [(args-valid? ::rule-result (rule nil) "render-rule")]}
   (.renderRule @Renderer (js-result rule) props))
 
 (defn render-keyframe
@@ -52,16 +132,21 @@
    @param {fn}  keyframe: a function returning the keyframe map REQUIRED
    @param {map} props:    a map of values passed to the keyframe function"
   [keyframe props]
+  {:pre [(args-valid? ::render-keyframe keyframe "render-keyframe")]}
+  {:post [(args-valid? ::keyframe-result (keyframe nil) "render-keyframe")]}
   (.renderKeyframe @Renderer (js-result (js-keyframe keyframe)) props))
 
 (defn render-font
   "Adds a font-face to the style node
   
    @param {string} family: font-family name REQUIRED
-   @param {vector} files:  collection of font source file paths relative to index.html REQUIRED
+   @param {coll}   files:  collection of font source file paths relative to index.html REQUIRED
    @param {map}    props:  hash-map containing optional font properties; includes font-variant, font-stretch, font-weight, font-style, unicode-range"
   [family files props]
-  (.renderFont @Renderer (apply js-obj (map->name-seq props))))
+  {:pre [(args-valid? ::font-family family "render-font")
+         (args-valid? ::font-files files "render-font")
+         (args-valid? ::font-props props "render-font")]}
+  (.renderFont @Renderer family (vec files) (apply js-obj (map->name-seq props))))
 
 (defn render-static
   "applies static styles to the provided selectors
@@ -69,6 +154,8 @@
    @param {map}    styles:    styles object REQUIRED
    @param {vector} selectors: vector containing keys describing desired selectors REQUIRED"
   [styles selectors]
+  {:pre [(args-valid? ::static-styles styles "render-static")
+         (args-valid? ::static-selectors selectors "render-static")]}
   (.renderStatic
     @Renderer
     (apply js-obj (map->name-seq styles))
@@ -85,6 +172,7 @@
 
    @param {fn} cbfn: callback function REQUIRED"
   [cbfn]
+  {:pre [(args-valid? ::subscription-callback cbfn "subscribe-to-styles")]}
   (.subscribe @Renderer cbfn))
 
 (defn clear-styles
@@ -108,6 +196,7 @@
 
    @param {coll} rules: a collection of rule functions to be combined REQUIRED"
   [& rules]
+  {:pre [(args-valid? ::rule-collection rules "combine-rules")]}
   (fn [props]
     (reduce merge (map #(% props) rules))))
 
@@ -116,14 +205,15 @@
    a 'props' key-value pair then applies the keyframe to the style node and
    returns the animation string
   
-   @param {key+string}     duration:  the animation's duration REQUIRED
-   @param {key+string}     timing-fn: a timing function (i.e. 'ease-in')
-   @param {key+string}     delay:     the animation's delay
-   @param {key+int/string} count:     the number of iterations
-   @param {key+string}     direction: the animation's direction
-   @param {key+fn}         keyframe:  a function returning the keyframe map REQUIRED
-   @param {key+map}        props:     a map of values passed to the keyframe function"
+   @param {kv(string)}     duration:  the animation's duration REQUIRED
+   @param {kv(string)}     timing-fn: a timing function (i.e. 'ease-in')
+   @param {kv(string)}     delay:     the animation's delay
+   @param {kv(string/int)} count:     the number of iterations
+   @param {kv(string)}     direction: the animation's direction
+   @param {kv(fn)}         keyframe:  a function returning the keyframe map REQUIRED
+   @param {kv(map)}        props:     a map of values passed to the keyframe function"
   [& {:keys [duration timing-fn delay count direction keyframe props] :as args}]
+  {:pre [(args-valid? ::animation args "build-animation")]}
   (str (apply str (interpose " " (filter #(or (string? %) (number? %)) (map val args))))
        " "
        (render-keyframe keyframe props)))
@@ -182,5 +272,5 @@
                                  :on-click #(swap! state not)}
                                 "Test Component"]])})))
 
-(create-renderer {:plugins #js[(js/FelaPluginPrefixer)]})
+(create-renderer)
 (r/render [test-cmp] (.getElementById js/document "app"))

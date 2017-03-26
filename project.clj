@@ -6,10 +6,9 @@
 
   :min-lein-version "2.7.1"
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha15"]
                  [org.clojure/clojurescript "1.9.229"]
-                 [org.clojure/core.async "0.2.395"
-                  :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/core.async "0.3.442"]
                  [reagent "0.6.0"]]
 
   :plugins [[lein-figwheel "0.5.9"]
@@ -33,7 +32,9 @@
                                           {:file "js/fela-dom.js"
                                            :provides ["js.fela-dom"]}
                                           {:file "js/fela-plugin-prefixer.js"
-                                           :provides ["js.fela-prefixer"]}]
+                                           :provides ["js.fela-prefixer"]}
+                                          {:file "js/fela-font-renderer.js"
+                                           :provides ["js.fela-font-renderer"]}]
                            :source-map-timestamp true
                            :preloads [devtools.preload]}}
                {:id "min"
