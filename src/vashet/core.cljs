@@ -2,7 +2,6 @@
   (:require
     js.fela
     js.fela-dom
-    js.fela-font-renderer
     js.fela-prefixer
     [clojure.spec :as s]
     [clojure.string :refer [capitalize split]]
@@ -33,6 +32,8 @@
 (s/def ::static-selectors (s/or :string string? :selector-vec (s/coll-of key-or-str)))
 
 (s/def ::subscription-callback fn?)
+
+(s/def ::DOM-node #(= (.-nodeType %) 1))
 
 (s/def ::rule-collection (s/coll-of fn?))
 
@@ -90,13 +91,6 @@
   []
   (js/FelaPluginPrefixer))
 
-(defn create-font-renderer
-  "creates a seperate renderer for adding font faces to a style node to avoid reloading fonts on each diff; include in the 'enhancers' vector of the 'create-renderer' config
-
-   @param {dom-element} node: the 'style' or 'div' node to append font faces to REQUIRED"
-  [node]
-  (js/FelaFontRenderer node))
-
 ;; ---------------------- Renderer API
 
 (def Renderer (atom nil))
@@ -109,9 +103,7 @@
   {:pre [(args-valid? ::renderer-config config "create-renderer")]}
   (let [default-config {:plugins [(auto-prefixer)]}
         jsify-config   #(apply js-obj (map vec->array (map->name-seq (map-keys->camel %))))
-        js-config      (if config
-                         (jsify-config (merge default-config config))
-                         (jsify-config default-config))]
+        js-config      (jsify-config (merge default-config config))]
     (reset! Renderer (.createRenderer js/Fela js-config))))
 
 (defn render-rule
@@ -188,6 +180,7 @@
 
    @param {dom-element} node: a 'style' or 'div' element to append styles to REQUIRED"
   [node]
+  {:pre [(args-valid? ::DOM-node node "init-styles")]}
   (.render js/FelaDOM @Renderer node))
 
 (defn combine-rules
@@ -226,51 +219,5 @@
    @param {key+map}  props:     a map of styles passed to the rule function
    @param {key+coll} add-class: a collection of strings or keys corresponding to regular css classes"
   [& {:keys [rule props add-class]}]
-  (let [static-string (apply str (interpose " " add-class))]
+  (let [static-string (apply str (interpose " " (map name add-class)))]
     (str (render-rule rule props) " " static-string)))
-
-(defn test-keyframe
-  [props]
-  {:0%   {:font-size "10px"}
-   :100% {:font-size (:final-size props)}})
-
-(defn test-rule
-  [props]
-  {:color     (:color props)
-   :transform "rotate(90deg)"
-   :display   "inline-block"
-   :font-size (str (* (:font-size props) 10) "px")
-   :animation (build-animation
-                :duration  "1s"
-                :timing-fn "ease-in"
-                :count     "infinite"
-                :direction "alternate"
-                :keyframe  test-keyframe
-                :props     {:final-size "40px"})})
-
-(defn test-rule-two
-  [props]
-  {:font-weight "bold"})
-
-(def combined (combine-rules test-rule-two test-rule))
-
-(defn test-cmp
-  []
-  (let [state (r/atom false)]
-    (r/create-class
-      {:component-did-mount (fn []
-                              (init-styles (.getElementById js/document "vashet"))
-                              (render-static {:background-color "#999"} [:body :p]))
-       :reagent-render      (fn []
-                              [:div 
-                               [:p
-                                {:class    (render-styles
-                                             :rule      combined
-                                             :props     {:color     (if @state "red" "blue")
-                                                         :font-size 5}
-                                             :add-class ["style-a" "style-b"]) 
-                                 :on-click #(swap! state not)}
-                                "Test Component"]])})))
-
-(create-renderer)
-(r/render [test-cmp] (.getElementById js/document "app"))
