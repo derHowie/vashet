@@ -1,4 +1,4 @@
 language: clojure
-sude: false
+sudo: false
 script:
     lein doo phantom test once
