@@ -112,7 +112,7 @@
                                :timing-fn "ease-in"
                                :delay     "1s"
                                :count     "infinite"
-                               :direction "alternating"
+                               :direction "alternate"
                                :keyframe  anim-test-keyframe
                                :props     {:start 0
                                            :end   1}) 
@@ -123,7 +123,7 @@
                               :font-size "12px"})
 
       (is (= (render-to-string)
-             "@-webkit-keyframes k1{0%{opacity:0}100%{opacity:1}}@-moz-keyframes k1{0%{opacity:0}100%{opacity:1}}@keyframes k1{0%{opacity:0}100%{opacity:1}}.a{animation:3s infinite ease-in 1s alternating k1;-webkit-animation:3s infinite ease-in 1s alternating k1}.b{font-size:12px}"))
+             "@-webkit-keyframes k1{0%{opacity:0}100%{opacity:1}}@-moz-keyframes k1{0%{opacity:0}100%{opacity:1}}@keyframes k1{0%{opacity:0}100%{opacity:1}}.a{animation:3s infinite ease-in 1s alternate k1;-webkit-animation:3s infinite ease-in 1s alternate k1}.b{font-size:12px}"))
       
       ;; remove current styles from Renderer
       (clear-styles))))
