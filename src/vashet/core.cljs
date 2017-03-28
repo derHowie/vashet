@@ -4,8 +4,7 @@
     js.fela-dom
     js.fela-prefixer
     [clojure.spec :as s]
-    [clojure.string :refer [capitalize split]]
-    [reagent.core :as r])
+    [clojure.string :refer [capitalize split]])
   (:require-macros
     [vashet.core :refer [js-keyframe js-result]]))
 
