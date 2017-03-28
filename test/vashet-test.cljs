@@ -106,25 +106,24 @@
 
 (deftest build-animation-test
   (testing "build-animation"
-    (subscribe-to-styles #(println (str "new change: " (js->clj %))))
-    (let [test-keyframe #(into {} {:0% {:opacity (:start %)} :100% {:opacity (:end %)}})
-          test-rule     (fn [props]
-                          {:animation (build-animation
-                                        :duration  "3s"
-                                        :timing-fn "ease-in"
-                                        :delay     (:delay props)
-                                        :count     "infinite"
-                                        :direction "alternating"
-                                        :keyframe  test-keyframe
-                                        :props     {:start (:start props)
-                                                    :end   (:end props)})})]
-      
-      (render-rule test-rule {:delay "1s"
-                              :start 0
-                              :end   1})
-      
+    (let [anim-test-keyframe #(into {} {:0% {:opacity (:start %)} :100% {:opacity (:end %)}})
+          animation-string   (build-animation
+                               :duration  "3s"
+                               :timing-fn "ease-in"
+                               :delay     "1s"
+                               :count     "infinite"
+                               :direction "alternating"
+                               :keyframe  anim-test-keyframe
+                               :props     {:start 0
+                                           :end   1}) 
+          test-rule          #(merge {:animation nil} %)]
+
+      ;; apply styles, including animation, to Renderer with render-rule
+      (render-rule test-rule {:animation animation-string
+                              :font-size "12px"})
+
       (is (= (render-to-string)
-             "@-webkit-keyframes k1{0%{}100%{}}@-moz-keyframes k1{0%{}100%{}}@keyframes k1{0%{}100%{}}@-webkit-keyframes k2{0%{opacity:0}100%{opacity:1}}@-moz-keyframes k2{0%{opacity:0}100%{opacity:1}}@keyframes k2{0%{opacity:0}100%{opacity:1}}.a{animation:3s infinite ease-in 1s alternating k2;-webkit-animation:3s infinite ease-in 1s alternating k2}"))
+             "@-webkit-keyframes k1{0%{opacity:0}100%{opacity:1}}@-moz-keyframes k1{0%{opacity:0}100%{opacity:1}}@keyframes k1{0%{opacity:0}100%{opacity:1}}.a{animation:3s infinite ease-in 1s alternating k1;-webkit-animation:3s infinite ease-in 1s alternating k1}.b{font-size:12px}"))
       
       ;; remove current styles from Renderer
       (clear-styles))))

@@ -84,6 +84,10 @@
   [m]
   (into {} (filter #(not= (val %) nil) m)))
 
+(defn- kf-rip-nils
+  [m]
+  (filter #(seq (val %)) (into {} (map #(into [] [(key %) (rip-nils (val %))]) m))))
+
 ;; ---------------------- Plugins / Enhancers
 
 (defn auto-prefixer

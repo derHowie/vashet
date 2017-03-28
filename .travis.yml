@@ -1,0 +1,4 @@
+language: clojure
+sude: false
+script:
+    lein doo phantom test once

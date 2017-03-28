@@ -17,5 +17,5 @@
    @param {fn} wrapped-fn: a function returning an EDN map describing a keyframe"
   [wrapped-fn]
   `(fn [& [props#]]
-     (let [value->js-obj# #(apply ~'js-obj (~'map->name-seq (~'rip-nils %)))]
-       (~'map-map (~wrapped-fn props#) identity value->js-obj#))))
+     (let [value->js-obj# #(apply ~'js-obj (~'map->name-seq %))]
+       (~'map-map (~'kf-rip-nils (~wrapped-fn props#)) identity value->js-obj#))))
