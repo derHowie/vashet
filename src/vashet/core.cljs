@@ -1,8 +1,8 @@
 (ns vashet.core
   (:require
-    js.fela
-    js.fela-dom
-    js.fela-prefixer
+    cljsjs.fela
+    cljsjs.fela-dom
+    cljsjs.fela-plugin-prefixer
     [clojure.spec :as s]
     [clojure.string :refer [capitalize split]])
   (:require-macros
@@ -101,7 +101,7 @@
 (defn create-renderer
   "instantiate the fela renderer with an optional config object
    
-   @param {map} config: a map of configuration options; includes plugins, key-frame-prefixes, enhancers, media-query-order, selector-prefix"
+   param -- {map} config: a map of configuration options; includes plugins, key-frame-prefixes, enhancers, media-query-order, selector-prefix"
   [& [config]]
   {:pre [(args-valid? ::renderer-config config "create-renderer")]}
   (let [default-config {:plugins [(auto-prefixer)]}
@@ -113,8 +113,8 @@
   "accepts a function, applies the resulting styles to the style node,
    and returns the class name
 
-   @param {fn}  rule:  a function returning a map of styles REQUIRED
-   @param {map} props: a map of styles passed to the rule function"
+   param -- {fn}  rule:  a function returning a map of styles REQUIRED
+   param -- {map} props: a map of styles passed to the rule function"
   [rule props]
   {:pre [(args-valid? ::render-rule rule "render-rule")]}
   {:post [(args-valid? ::rule-result (rule nil) "render-rule")]}
@@ -124,8 +124,8 @@
   "accepts a keyframe function, applies the keyframe to the style node, and
    returns the name of the keyframe
 
-   @param {fn}  keyframe: a function returning the keyframe map REQUIRED
-   @param {map} props:    a map of values passed to the keyframe function"
+   param -- {fn}  keyframe: a function returning the keyframe map REQUIRED
+   param -- {map} props:    a map of values passed to the keyframe function"
   [keyframe props]
   {:pre [(args-valid? ::render-keyframe keyframe "render-keyframe")]}
   {:post [(args-valid? ::keyframe-result (keyframe nil) "render-keyframe")]}
@@ -134,9 +134,9 @@
 (defn render-font
   "Adds a font-face to the style node
   
-   @param {string} family: font-family name REQUIRED
-   @param {coll}   files:  collection of font source file paths relative to index.html REQUIRED
-   @param {map}    props:  hash-map containing optional font properties; includes font-variant, font-stretch, font-weight, font-style, unicode-range"
+   param -- {string} family: font-family name REQUIRED
+   param -- {coll}   files:  collection of font source file paths relative to index.html REQUIRED
+   param -- {map}    props:  hash-map containing optional font properties; includes font-variant, font-stretch, font-weight, font-style, unicode-range"
   [family files props]
   {:pre [(args-valid? ::font-family family "render-font")
          (args-valid? ::font-files files "render-font")
@@ -146,8 +146,8 @@
 (defn render-static
   "applies static styles to the provided selectors
 
-   @param {map}    styles:    styles object REQUIRED
-   @param {vector} selectors: vector containing keys describing desired selectors REQUIRED"
+   param -- {map}    styles:    styles object REQUIRED
+   param -- {vector} selectors: vector containing keys describing desired selectors REQUIRED"
   [styles selectors]
   {:pre [(args-valid? ::static-styles styles "render-static")
          (args-valid? ::static-selectors selectors "render-static")]}
@@ -165,7 +165,7 @@
   "hands a callback function to a listener that fires every time a new
    style is rendered; returns info obj
 
-   @param {fn} cbfn: callback function REQUIRED"
+   param -- {fn} cbfn: callback function REQUIRED"
   [cbfn]
   {:pre [(args-valid? ::subscription-callback cbfn "subscribe-to-styles")]}
   (.subscribe @Renderer cbfn))
@@ -181,7 +181,7 @@
 (defn init-styles
   "calls fela-dom.render() on the provided node
 
-   @param {dom-element} node: a 'style' or 'div' element to append styles to REQUIRED"
+   param -- {dom-element} node: a 'style' or 'div' element to append styles to REQUIRED"
   [node]
   {:pre [(args-valid? ::DOM-node node "init-styles")]}
   (.render js/FelaDOM @Renderer node))
@@ -190,7 +190,7 @@
   "accepts a collection of rule functions and merges their result; functions
   appearing later in the collection overwrite existing properties
 
-   @param {coll} rules: a collection of rule functions to be combined REQUIRED"
+   param -- {coll} rules: a collection of rule functions to be combined REQUIRED"
   [& rules]
   {:pre [(args-valid? ::rule-collection rules "combine-rules")]}
   (fn [props]
@@ -201,13 +201,13 @@
    a 'props' key-value pair then applies the keyframe to the style node and
    returns the animation string
   
-   @param {kv(string)}     duration:  the animation's duration REQUIRED
-   @param {kv(string)}     timing-fn: a timing function (i.e. 'ease-in')
-   @param {kv(string)}     delay:     the animation's delay
-   @param {kv(string/int)} count:     the number of iterations
-   @param {kv(string)}     direction: the animation's direction
-   @param {kv(fn)}         keyframe:  a function returning the keyframe map REQUIRED
-   @param {kv(map)}        props:     a map of values passed to the keyframe function"
+   param -- {kv(string)}     duration:  the animation's duration REQUIRED
+   param -- {kv(string)}     timing-fn: a timing function (i.e. 'ease-in')
+   param -- {kv(string)}     delay:     the animation's delay
+   param -- {kv(string/int)} count:     the number of iterations
+   param -- {kv(string)}     direction: the animation's direction
+   param -- {kv(fn)}         keyframe:  a function returning the keyframe map REQUIRED
+   param -- {kv(map)}        props:     a map of values passed to the keyframe function"
   [& {:keys [duration timing-fn delay count direction keyframe props] :as args}]
   {:pre [(args-valid? ::animation args "build-animation")]}
   (str (apply str (interpose " " (filter #(or (string? %) (number? %)) (map val args))))
@@ -218,9 +218,9 @@
   "works like 'render-rule' but accepts key-value pairs and allows for optionally
    passing in a collection of regular css classes to included
   
-   @param {key+fn}   rule:      a function returning a map of styles REQUIRED
-   @param {key+map}  props:     a map of styles passed to the rule function
-   @param {key+coll} add-class: a collection of strings or keys corresponding to regular css classes"
+   param -- {key+fn}   rule:      a function returning a map of styles REQUIRED
+   param -- {key+map}  props:     a map of styles passed to the rule function
+   param -- {key+coll} add-class: a collection of strings or keys corresponding to regular css classes"
   [& {:keys [rule props add-class]}]
   (let [static-string (apply str (interpose " " (map name add-class)))]
     (str (render-rule rule props) " " static-string)))

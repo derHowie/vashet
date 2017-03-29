@@ -9,6 +9,10 @@
   :dependencies [[org.clojure/clojure "1.9.0-alpha15"]
                  [org.clojure/clojurescript "1.9.229"]
                  [org.clojure/core.async "0.3.442"]
+                 [cljsjs/fela "4.3.2-0"]
+                 [cljsjs/fela-dom "4.3.2-0"]
+                 [cljsjs/fela-plugin-prefixer "4.3.2-0"]
+                 [reagent "0.6.0"]
                  [doo "0.1.6-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.1.5" :exclusions [[org.clojure/clojure]]]
@@ -25,19 +29,11 @@
                            :output-dir "target/test/"
                            :main vashet.test-runner
                            :optimizations :none
-                           :foreign-libs [{:file "js/fela.js"
-                                           :provides ["js.fela"]}
-                                          {:file "js/fela-dom.js"
-                                           :provides ["js.fela-dom"]}
-                                          {:file "js/fela-plugin-prefixer.js"
-                                           :provides ["js.fela-prefixer"]}]
-                           :pretty-print true
-                           :source-map false}}
+                           :pretty-print true}}
                {:id "min"
-                :source-paths ["src"]
-                :compiler {:output-to "resources/public/js/compiled/vashet.js"
-                           :main vashet.core
-                           :optimizations :advanced
+                :source-paths ["src" "browser"]
+                :compiler {:main browser.core
+                           :output-to "resources/public/js/compiled/vashet.min.js"
                            :pretty-print false
-                           :externs ["externs/externs.js"]}}]}
+                           :optimizations :advanced}}]}
   :doo {:build "test"})

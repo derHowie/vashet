@@ -1,0 +1,34 @@
+{
+  "name": "vashet",
+  "version": "0.0.1",
+  "description": "\"A ClojureScript wrapper for Robin Frischmann's css-in-js library fela\"",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "lein test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/derHowie/vashet.git"
+  },
+  "keywords": [
+    "css-in-js",
+    "ClojureScript"
+  ],
+  "author": "Christopher Howard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/derHowie/vashet/issues"
+  },
+  "homepage": "https://github.com/derHowie/vashet#readme",
+  "devDependencies": {
+    "body-parser": "^1.17.1",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.2",
+    "express": "^4.15.2",
+    "express-session": "^1.15.2",
+    "forever": "^0.15.3"
+  }
+}
