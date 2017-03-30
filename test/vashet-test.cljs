@@ -69,7 +69,7 @@
 (deftest subscribe-to-styles-test
   (testing "subscribe-to-styles"
     (let [state       (atom false)
-          callback-fn #(reset! state (aget % "declaration"))
+          callback-fn #(reset! state (:declaration %))
           test-rule   #(merge {:font-weight nil} %)]
       (async done
 

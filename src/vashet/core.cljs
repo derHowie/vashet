@@ -6,7 +6,7 @@
     [clojure.spec :as s]
     [clojure.string :refer [capitalize split]])
   (:require-macros
-    [vashet.core :refer [js-keyframe js-result]]))
+    [vashet.core :refer [nilless-keyframe js-result]]))
 
 ;; ---------------------- Spec
 
@@ -59,25 +59,13 @@
 
 ;; ---------------------- Helpers
 
-(defn- map->name-seq
-  [m]
-  (interleave (map name (map key m)) (map val m)))
-
 (defn- kebab->camel
   [v]
   (reduce (fn [a b] (if a (str a (capitalize b)) b)) nil (split (name v) #"\-")))
 
-(defn- map-map
-  ([m f1] (map-map m f1 identity)) 
-  ([m f1 f2] (zipmap (map f1 (map key m)) (map f2 (map val m)))))
-
 (defn- map-keys->camel
   [m]
-  (map-map m kebab->camel))
-
-(defn- vec->array
-  [v]
-  (if (and (coll? v) (not (map? v))) (apply array v) v))
+  (zipmap (map kebab->camel (map key m)) (map val m)))
 
 (defn- rip-nils
   [m]
@@ -85,7 +73,7 @@
 
 (defn- kf-rip-nils
   [m]
-  (filter #(seq (val %)) (into {} (map #(into [] [(key %) (rip-nils (val %))]) m))))
+  (into {} (filter #(seq (val %)) (into {} (map #(into [] [(key %) (rip-nils (val %))]) m)))))
 
 ;; ---------------------- Plugins / Enhancers
 
@@ -105,7 +93,7 @@
   [& [config]]
   {:pre [(args-valid? ::renderer-config config "create-renderer")]}
   (let [default-config {:plugins [(auto-prefixer)]}
-        jsify-config   #(apply js-obj (map vec->array (map->name-seq (map-keys->camel %))))
+        jsify-config   #(clj->js (map-keys->camel %))
         js-config      (jsify-config (merge default-config config))]
     (reset! Renderer (.createRenderer js/Fela js-config))))
 
@@ -129,7 +117,7 @@
   [keyframe props]
   {:pre [(args-valid? ::render-keyframe keyframe "render-keyframe")]}
   {:post [(args-valid? ::keyframe-result (keyframe nil) "render-keyframe")]}
-  (.renderKeyframe @Renderer (js-result (js-keyframe keyframe)) props))
+  (.renderKeyframe @Renderer (js-result (nilless-keyframe keyframe)) props))
 
 (defn render-font
   "Adds a font-face to the style node
@@ -141,7 +129,7 @@
   {:pre [(args-valid? ::font-family family "render-font")
          (args-valid? ::font-files files "render-font")
          (args-valid? ::font-props props "render-font")]}
-  (.renderFont @Renderer family (apply array files) (apply js-obj (map->name-seq props))))
+  (.renderFont @Renderer family (apply array files) (clj->js (map-keys->camel props))))
 
 (defn render-static
   "applies static styles to the provided selectors
@@ -153,7 +141,7 @@
          (args-valid? ::static-selectors selectors "render-static")]}
   (.renderStatic
     @Renderer
-    (apply js-obj (map->name-seq styles))
+    (clj->js styles)
     (apply str (interpose "," (map name selectors)))))
 
 (defn render-to-string
@@ -168,12 +156,11 @@
    param -- {fn} cbfn: callback function REQUIRED"
   [cbfn]
   {:pre [(args-valid? ::subscription-callback cbfn "subscribe-to-styles")]}
-  (.subscribe @Renderer cbfn))
+  (.subscribe @Renderer #(cbfn (js->clj % :keywordize-keys true))))
 
 (defn clear-styles
   []
-  "clears all styles from fela-dom.render()'s targeted node and prevents
-   more styles from rendering"
+  "clears all styles from fela-dom.render()'s targeted node"
   (.clear @Renderer))
 
 ;; ---------------------- Util Methods
