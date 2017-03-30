@@ -8,6 +8,8 @@ A ClojureScript wrapper for Robin Frischmann's css-in-js library [fela](https://
 [vashet "0.0.1"]
 ```
 
+> “This is the nature of love." Vashet said. "To attempt to describe it will drive a woman mad. This is what keeps poets scribbling endlessly away. If one could pin it to paper all complete, the others would lay down their pens. But it cannot be done.”
+
 ## Overview
 
 The primary objective of this project is provide the ability to leverage fela.js from ClojureScript without having to worry about interop and JavaScript object types. Most of the methods are just kebab-case versions of fela's api that accept ClojureScript data types. However fela's 'Renderer' class has been abstracted away and there are some additional utility methods.
