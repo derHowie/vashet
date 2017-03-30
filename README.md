@@ -2,11 +2,7 @@
 
 A ClojureScript wrapper for Robin Frischmann's css-in-js library [fela](https://github.com/rofrischmann/fela/).
 
-[![Build Status](https://travis-ci.org/derHowie/vashet.svg?branch=master)](https://travis-ci.org/derHowie/vashet)
-
-```clojure
-[vashet "0.0.1"]
-```
+[![Clojars Project](https://img.shields.io/clojars/v/vashet.svg)](https://clojars.org/vashet)[![Build Status](https://travis-ci.org/derHowie/vashet.svg?branch=master)](https://travis-ci.org/derHowie/vashet)
 
 > “This is the nature of love." Vashet said. "To attempt to describe it will drive a woman mad. This is what keeps poets scribbling endlessly away. If one could pin it to paper all complete, the others would lay down their pens. But it cannot be done.”
 

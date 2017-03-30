@@ -1,4 +1,4 @@
-(defproject vashet "0.1.0-SNAPSHOT"
+(defproject vashet "0.0.1"
   :description "A ClojureScript wrapper for Robin Frischmann's css-in-js library fela"
   :url "http://github.com/derHowie/vashet"
   :license {:name "Eclipse Public License"
@@ -12,8 +12,7 @@
                  [cljsjs/fela "4.3.2-0"]
                  [cljsjs/fela-dom "4.3.2-0"]
                  [cljsjs/fela-plugin-prefixer "4.3.2-0"]
-                 [reagent "0.6.0"]
-                 [doo "0.1.6-SNAPSHOT"]]
+                 [reagent "0.6.0"]]
 
   :plugins [[lein-cljsbuild "1.1.5" :exclusions [[org.clojure/clojure]]]
             [lein-doo "0.1.7"]]
