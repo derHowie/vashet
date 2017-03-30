@@ -1,6 +1,6 @@
 # vashet
 
-A ClojureScript wrapper for Robin Frischmann's css-in-js library fela.
+A ClojureScript wrapper for Robin Frischmann's css-in-js library [fela](https://github.com/rofrischmann/fela/).
 
 [![Build Status](https://travis-ci.org/derHowie/vashet.svg?branch=master)](https://travis-ci.org/derHowie/vashet)
 
@@ -73,14 +73,16 @@ This wrapper was made with Reagent in mind, but the class names generated can be
   {"@media (max-width 410px)" {:height "42px" :width (if (:wide? props) "90%" 92px)}
    "@media (max-width 920px)" {:height "64px" :width (if (:wide? props) "85%" 180px)}})
 
-(def toggle-button-rule (combine-rules toggle-button-style toggle-button-media-query))
+(def toggle-button-rule (styles/combine-rules
+                          toggle-button-style
+                          toggle-button-media-query))
 
 (defn toggle-button
   [text]
   (let [state (r/atom {:toggled? false})]
     (fn [text]
       [:div
-        {:class (styles/render-rule toggle-button-rule (merge {:bg-color "blue" :font-size 12} @toggled?))
+        {:class (styles/render-rule toggle-button-rule (merge {:bg-color "blue" :font-size 12} @state))
          :on-click #(update-in state [:toggled?] not)}
         text])))
 
@@ -98,6 +100,7 @@ This wrapper was made with Reagent in mind, but the class names generated can be
 ```
 
 ## API
+Below is a brief description of the available methods. For further clarification I recommend visiting fela's [website](http://fela.js.org/). Discounting plugins, all of fela's API is encapsulated here, but expects EDN arguments. The only plugin current available in vashet is [fela-plugin-prefixer](https://github.com/rofrischmann/fela/tree/master/packages/fela-plugin-prefixer) which is activated within vashet's default configuration. I intend to expose more fela plugins in the future.
 
 ### (create-renderer [& [config]])
 instantiate the fela renderer with an optional config object
