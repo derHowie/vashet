@@ -141,7 +141,7 @@
   {:pre [(args-valid? ::font-family family "render-font")
          (args-valid? ::font-files files "render-font")
          (args-valid? ::font-props props "render-font")]}
-  (.renderFont @Renderer family (vec files) (apply js-obj (map->name-seq props))))
+  (.renderFont @Renderer family (apply array files) (apply js-obj (map->name-seq props))))
 
 (defn render-static
   "applies static styles to the provided selectors
@@ -216,7 +216,7 @@
 
 (defn render-styles
   "works like 'render-rule' but accepts key-value pairs and allows for optionally
-   passing in a collection of regular css classes to included
+   passing in a collection of regular css classes to include
   
    param -- {key+fn}   rule:      a function returning a map of styles REQUIRED
    param -- {key+map}  props:     a map of styles passed to the rule function
