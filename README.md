@@ -81,7 +81,7 @@ This wrapper was made with Reagent in mind, but the class names generated can be
     (fn [text]
       [:div
         {:class (styles/render-rule toggle-button-rule (merge {:bg-color "blue" :font-size 12} @state))
-         :on-click #(update-in state [:toggled?] not)}
+         :on-click #(swap! update-in state [:toggled?] not)}
         text])))
 
 (defn application-container
