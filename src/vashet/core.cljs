@@ -11,9 +11,9 @@
 ;; ---------------------- Spec
 
 (def key-or-str (s/or :keyword keyword? :string string?))
-(def num-or-str (s/or :number number? :string string?))
+(def num-str-or-map (s/or :number number? :string string? :map map?))
 (def coll-or-str (s/or :coll coll? :string string?))
-(def valid-style-map (s/nilable (s/map-of key-or-str (s/nilable num-or-str))))
+(def valid-style-map (s/nilable (s/map-of key-or-str (s/nilable num-str-or-map))))
 
 (s/def ::renderer-config (s/nilable (s/map-of key-or-str coll-or-str :max-count 5)))
 
@@ -84,7 +84,7 @@
 
 ;; ---------------------- Renderer API
 
-(def Renderer (atom nil))
+(def Renderer (atom "not a renderer"))
 
 (defn create-renderer
   "instantiate the fela renderer with an optional config object
@@ -209,5 +209,5 @@
    param -- {key+map}  props:     a map of styles passed to the rule function
    param -- {key+coll} add-class: a collection of strings or keys corresponding to regular css classes"
   [& {:keys [rule props add-class]}]
-  (let [static-string (apply str (interpose " " (map name add-class)))]
+  (let [static-string (apply str (interpose " " (map name (filter #(not (nil? %)) add-class))))]
     (str (render-rule rule props) " " static-string)))

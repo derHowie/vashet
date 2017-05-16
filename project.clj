@@ -1,4 +1,4 @@
-(defproject vashet "0.0.1"
+(defproject vashet "0.0.3-SNAPSHOT"
   :description "A ClojureScript wrapper for Robin Frischmann's css-in-js library fela"
   :url "http://github.com/derHowie/vashet"
   :license {:name "Eclipse Public License"
