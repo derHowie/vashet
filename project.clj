@@ -7,7 +7,7 @@
   :min-lein-version "2.7.1"
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha15"]
-                 [org.clojure/clojurescript "1.9.494"]
+                 [org.clojure/clojurescript "1.9.908"]
                  [org.clojure/core.async "0.3.442"]
                  [cljsjs/fela "4.3.2-0"]
                  [cljsjs/fela-dom "4.3.2-0"]
