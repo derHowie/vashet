@@ -29,7 +29,8 @@
                            :output-dir "target/test/"
                            :main vashet.test-runner
                            :optimizations :none
-                           :pretty-print true}}
+                           :pretty-print true
+                           :process-shim false}}
                {:id "min"
                 :source-paths ["src" "browser"]
                 :compiler {:main browser.core
