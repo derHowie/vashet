@@ -3,7 +3,7 @@
     cljsjs.fela
     cljsjs.fela-dom
     cljsjs.fela-plugin-prefixer
-    [clojure.spec :as s]
+    [clojure.spec.alpha :as s]
     [clojure.string :refer [capitalize split]])
   (:require-macros
     [vashet.core :refer [nilless-keyframe js-result]]))
