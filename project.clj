@@ -9,6 +9,7 @@
   :dependencies [[org.clojure/clojure "1.9.0-alpha16"]
                  [org.clojure/clojurescript "1.9.494"]
                  [org.clojure/core.async "0.3.442"]
+                 [org.clojure/spec.alpha "0.1.123"]
                  [cljsjs/fela "4.3.2-0"]
                  [cljsjs/fela-dom "4.3.2-0"]
                  [cljsjs/fela-plugin-prefixer "4.3.2-0"]
