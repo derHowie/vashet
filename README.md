@@ -1,6 +1,6 @@
 # vashet
 
-A ClojureScript wrapper for Robin Frischmann's css-in-js library [fela](https://github.com/rofrischmann/fela/).
+A ClojureScript wrapper for the css-in-js library [fela](https://github.com/rofrischmann/fela/).
 
 [![Clojars Project](https://img.shields.io/clojars/v/vashet.svg)](https://clojars.org/vashet)[![Build Status](https://travis-ci.org/derHowie/vashet.svg?branch=master)](https://travis-ci.org/derHowie/vashet)
 
